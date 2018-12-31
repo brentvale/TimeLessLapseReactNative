@@ -2,7 +2,7 @@ import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createBottomTabNavigator } from 'react-navigation';
 
-import Camera from './components/screens/camera';
+import Photo from './components/screens/photo';
 import Profile from './components/screens/profile';
 import Home from './components/screens/home';
 
@@ -11,8 +11,8 @@ export default createBottomTabNavigator(
     Home: {
       screen: Home,
     },
-    Camera: {
-      screen: Camera,
+    Photo: {
+      screen: Photo,
     },
     Profile: {
       screen: Profile,
@@ -24,11 +24,11 @@ export default createBottomTabNavigator(
         const { routeName } = navigation.state;
         let iconName;
         switch (routeName) {
-          case 'Camera':
-            iconName = 'ios-camera';
-            break;
           case 'Home':
             iconName = 'ios-home';
+            break;
+          case 'Photo':
+            iconName = 'ios-camera';
             break;
           case 'Profile':
             iconName = 'ios-contact';

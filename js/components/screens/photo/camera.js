@@ -36,8 +36,8 @@ export default class Camera extends Component {
             style = {styles.preview}
             type={RNCamera.Constants.Type.back}
             flashMode={RNCamera.Constants.FlashMode.on}
-            permissionDialogTitle={'Permission to use camera'}
-            permissionDialogMessage={'We need your permission to use your phone\'s camera.'}
+            permissionDialogTitle={'Permission to use photo'}
+            permissionDialogMessage={'We need your permission to use your phone\'s photo.'}
           >
             {({ camera, status }) => {
               if (status !== 'READY') return <PendingView />;

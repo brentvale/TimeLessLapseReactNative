@@ -40,17 +40,6 @@ class PhotoMain extends Component {
     }
   };
 
-  // renderTabBar = props => (
-  //   <View style={styles.header}>
-  //     <TabBar
-  //       {...props}
-  //       // labelStyle={styles.tabLabel}
-  //       // tabStyle={styles.tabLabel}
-  //       // indicatorStyle={styles.tabLabel}
-  //     />
-  //   </View>
-  // );
-
   renderTabBar = props => (
       <TabBar
         {...props}

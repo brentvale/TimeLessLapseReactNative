@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
   Image,
   ScrollView,
+  Slider,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,12 +11,27 @@ import {
 import { concat } from 'lodash';
 import ImagePicker from 'react-native-image-crop-picker';
 
+const SLIDER_RANGE = [1, 10];
+const VALUE_TO_MS = {
+  1: 1000,
+  2: 800,
+  3: 600,
+  4: 400,
+  5: 300,
+  6: 200,
+  7: 100,
+  8: 60,
+  9: 30,
+  10: 20,
+};
+
 export default class Upload extends Component {
   constructor() {
     super();
     this.state = {
       images: [],
       currentIndex: 0,
+      playSpeed: 1, // converted to ms with VALUE_TO_MS
     };
   }
 
@@ -27,8 +43,8 @@ export default class Upload extends Component {
     forceJpg: true, // Live Photo will be converted to its JPG representation
   };
 
-  componentWillUnmount(){
-    if(this.playInterval){
+  componentWillUnmount() {
+    if (this.playInterval) {
       clearInterval(this.playInterval);
     }
   }
@@ -38,11 +54,23 @@ export default class Upload extends Component {
       this.setState({
         currentIndex: this.state.images[this.state.currentIndex + 1] ? this.state.currentIndex + 1 : 0,
       });
-    }, 1000);
+    }, VALUE_TO_MS[this.state.playSpeed]);
   };
 
   pause = () => {
-    clearInterval(this.playInterval);
+    if (this.playInterval) {
+      clearInterval(this.playInterval);
+    }
+  };
+
+  onSpeedValueChange = newSpeed => {
+    this.pause();
+    this.setState({ playSpeed: newSpeed });
+  };
+
+  onSpeedSelected = selectedSpeed => {
+    this.pause();
+    this.setState({ playSpeed: selectedSpeed });
   };
 
   onUploadPress = () => {
@@ -54,6 +82,10 @@ export default class Upload extends Component {
     const currentImages = this.state.images.slice(0);
     const allImages = concat(currentImages, images);
     this.setState({ images: allImages });
+  };
+
+  setCurrentIndex = idx => {
+    this.setState({ currentIndex: idx });
   };
 
   render() {
@@ -76,13 +108,17 @@ export default class Upload extends Component {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <PlayAndPauseRow play={this.play}
+                <PlayAndPauseRow sliderValue={this.state.playSpeed}
+                                 play={this.play}
                                  pause={this.pause}
+                                 onValueChange={this.onSpeedValueChange}
+                                 onSlidingComplete={this.onSpeedSelected}
                 />
               </View>
-              <View style={{ flex: 6 }}>
+              <View style={{ flex: 3 }}>
                 <ImageListScrollView images={this.state.images}
                                      currentIndex={this.state.currentIndex}
+                                     setCurrentIndex={this.setCurrentIndex}
                 />
               </View>
             </View>}
@@ -92,33 +128,52 @@ export default class Upload extends Component {
   }
 }
 const ImagePlayThrough = ({ images, currentIndex }) => (
-  <View style={{ flex: 1, backgroundColor: 'orange' }}>
+  <View style={{ flex: 1 }}>
     <ImagePlay imgObj={images[currentIndex]} />
   </View>
 );
 
-const PlayAndPauseRow = ({ play, pause }) => (
-  <View style={{ flex: 1, flexDirection: 'row' }}>
-    <View style={styles.left}>
-      <TouchableOpacity
-        style={styles.controlButton}
-        onPress={() => play()}
-      >
-        <Text>Play</Text>
-      </TouchableOpacity>
-    </View>
-    <View style={styles.right}>
-      <TouchableOpacity
-        style={styles.controlButton}
-        onPress={() => pause()}
-      >
-        <Text>Pause</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-);
+const PlayAndPauseRow = ({
+  play,
+  pause,
+  onValueChange,
+  onSlidingComplete,
+  sliderValue,
+}) => {
+  return (
+    <View style={{ flex: 1, flexDirection: 'column' }}>
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={styles.left}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => play()}
+          >
+            <Text>Play</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.right}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => pause()}
+          >
+            <Text>Pause</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <Slider onValueChange={val => onValueChange(val)}
+                onSlidingComplete={finalVal => onSlidingComplete(finalVal)}
+                value={sliderValue}
+                step={1}
+                minimumValue={SLIDER_RANGE[0]}
+                maximumValue={SLIDER_RANGE[1]}
+                style={{ width: '100%' }}
+        />
+      </View>
+    </View>);
+};
 
-const ImageListScrollView = ({ images, currentIndex }) => (
+const ImageListScrollView = ({ images, currentIndex, setCurrentIndex }) => (
   <ScrollView
     style={styles.scroll}
   >
@@ -127,15 +182,23 @@ const ImageListScrollView = ({ images, currentIndex }) => (
                                                  key={imgObj.filename}
                                                  currentIndex={currentIndex}
                                                  index={idx}
+                                                 setCurrentIndex={setCurrentIndex}
       />)}
     </View>
   </ScrollView>
 );
 
-const ImageDisplay = ({ imgObj, currentIndex, index }) => {
+const ImageDisplay = ({
+  imgObj,
+  currentIndex,
+  index,
+  setCurrentIndex,
+}) => {
   const borderColor = currentIndex === index ? 'blue' : 'white';
   return (
-    <View style={{ height: 100, width: 100, margin: 2 }}>
+    <TouchableOpacity onPress={() => setCurrentIndex(index)}
+                      style={{ height: 100, width: 100, margin: 2 }}
+    >
       <Image source={{ uri: imgObj.sourceURL }}
              style={[
                styles.imageContainer,
@@ -143,7 +206,7 @@ const ImageDisplay = ({ imgObj, currentIndex, index }) => {
              ]}
              resizeMode={'contain'}
       />
-    </View>
+    </TouchableOpacity>
   );
 };
 

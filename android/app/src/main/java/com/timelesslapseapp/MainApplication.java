@@ -3,6 +3,7 @@ package com.timelesslapseapp;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import org.bvic23.rngetpixel.RNPixelColorPackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import org.reactnative.camera.RNCameraPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
@@ -26,6 +27,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNPixelColorPackage(),
             new PickerPackage(),
             new RNCameraPackage(),
             new VectorIconsPackage()

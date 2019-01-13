@@ -11,6 +11,8 @@ import {
 import { concat } from 'lodash';
 import ImagePicker from 'react-native-image-crop-picker';
 
+import StabilizeModal from './stabilizeModal';
+
 const SLIDER_RANGE = [1, 10];
 const VALUE_TO_MS = {
   1: 1000,
@@ -32,6 +34,7 @@ export default class Upload extends Component {
       images: [],
       currentIndex: 0,
       playSpeed: 1, // converted to ms with VALUE_TO_MS
+      stabilizeModalOpen: false,
     };
   }
 
@@ -81,6 +84,7 @@ export default class Upload extends Component {
   onUpload = images => {
     const currentImages = this.state.images.slice(0);
     const allImages = concat(currentImages, images);
+    console.log("IMAGES : ", allImages);
     this.setState({ images: allImages });
   };
 
@@ -88,9 +92,19 @@ export default class Upload extends Component {
     this.setState({ currentIndex: idx });
   };
 
+  openStabilizeModal = () => {
+    this.setState({ stabilizeModalOpen: true });
+  };
+
   render() {
     return (
       <View style={{ flex: 1 }}>
+        {Boolean(this.state.images.length)
+          && <StabilizeModal modalOpen={this.state.stabilizeModalOpen}
+                             closeModal={() => this.setState({ stabilizeModalOpen: false })}
+                             firstImg={this.state.images[0]}
+              />}
+
         {!(this.state.images.length)
         && <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -113,6 +127,7 @@ export default class Upload extends Component {
                                  pause={this.pause}
                                  onValueChange={this.onSpeedValueChange}
                                  onSlidingComplete={this.onSpeedSelected}
+                                 openStabilizeModal={this.openStabilizeModal}
                 />
               </View>
               <View style={{ flex: 3 }}>
@@ -138,6 +153,7 @@ const PlayAndPauseRow = ({
   pause,
   onValueChange,
   onSlidingComplete,
+  openStabilizeModal,
   sliderValue,
 }) => {
   return (
@@ -157,6 +173,12 @@ const PlayAndPauseRow = ({
             onPress={() => pause()}
           >
             <Text>Pause</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => openStabilizeModal()}
+          >
+            <Text>Stabilize</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -223,6 +245,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  controlButton: {
+    height: '100%',
+    width: 80,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   imageContainer: {
     height: '100%',
     borderWidth: 1,
@@ -232,13 +261,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-  },
-  controlButton: {
-    height: '100%',
-    width: 80,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   right: {
     flex: 1,
